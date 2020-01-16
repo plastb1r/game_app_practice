@@ -32,9 +32,9 @@ class GameField {
   void move(direction dir) {
     _shake(dir);
     for (var i = 0; i < _sideLength; i++) {
-      List line = getLine(i, _lineType(dir));
+      List line = getLine(i, dir);
       for (var j = 0; j < _sideLength - 1; j++) {
-        if (line[j] == line[j + 1]) {
+        if (line[j] == line[j + 1] && line[j] != 0) {
           line[j] *= 2;
           line[j + 1] = 0;
         }
@@ -54,19 +54,19 @@ class GameField {
         return -1;
       });
 
-      if (isReversed(dir))
-        setLine(i, _lineType(dir), line.reversed);
+      if (_isReversed(dir))
+        setLine(i, _lineType(dir), line.reversed.toList());
       else
         setLine(i, _lineType(dir), line);
     }
   }
 
   List getLine(int index, direction dir) {
-    if (dir == direction.horizontal) {
+    if (_lineType(dir) == direction.horizontal) {
       return _field.sublist(
           index * _sideLength, index * _sideLength + _sideLength);
     }
-    if (dir == direction.vertical) {
+    if (_lineType(dir) == direction.vertical) {
       List column = [];
       for (var i = 0, j = index; i < _sideLength; i++, j += _sideLength) {
         column.add(_field[j]);
@@ -77,24 +77,24 @@ class GameField {
   }
 
   void setLine(int index, direction dir, List line) {
-    if (dir == direction.horizontal) {
+    if (_lineType(dir) == direction.horizontal) {
       _field.replaceRange(
           index * _sideLength, index * _sideLength + _sideLength, line);
     }
-    if (dir == direction.vertical) {
+    if (_lineType(dir) == direction.vertical) {
       for (var i = 0, j = index; i < _sideLength; i++, j += _sideLength) {
-        _field[j] = line[j];
+        _field[j] = line[i];
       }
     }
   }
 
-  bool isReversed(direction dir) =>
-      dir == direction.left || dir == direction.down ? false : true;
+  bool _isReversed(direction dir) =>
+      dir == direction.right || dir == direction.down ? true : false;
 
   direction _lineType(direction dir) =>
-      dir == direction.left || dir == direction.right
+      dir == direction.left || dir == direction.right || dir==direction.horizontal
           ? direction.horizontal
-          : dir == direction.down || dir == direction.up
+          : dir == direction.down || dir == direction.up || dir == direction.vertical
               ? direction.vertical
               : direction.none;
 }

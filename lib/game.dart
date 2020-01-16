@@ -3,6 +3,21 @@ import 'package:flutter/material.dart';
 
 enum gameState { runing, game_over }
 
+final Map cellColors = {
+  0: Color.fromARGB(20, 50, 0, 0),
+  2: Color.fromARGB(40, 50, 0, 0),
+  4: Color.fromARGB(60, 50, 0, 0),
+  8: Color.fromARGB(80, 50, 0, 0),
+  16: Color.fromARGB(100, 50, 0, 0),
+  32: Color.fromARGB(120, 50, 0, 0),
+  64: Color.fromARGB(140, 50, 0, 0),
+  128: Color.fromARGB(160, 50, 0, 0),
+  256: Color.fromARGB(180, 50, 0, 0),
+  512: Color.fromARGB(200, 50, 0, 0),
+  1024: Color.fromARGB(220, 50, 0, 0),
+  2048: Color.fromARGB(240, 50, 0, 0),
+};
+
 class Game extends StatefulWidget {
   Game({Key key}) : super(key: key);
 
@@ -16,33 +31,41 @@ class _GameState extends State<Game> {
 
   @override
   void initState() {
+    newGame();
+    super.initState();
+  }
+
+  void newGame() {
     gameField = new GameField(sideLength: 4);
     game = gameState.runing;
     gameField.tryAddRandCell();
-    super.initState();
   }
 
   @override
   Widget build(BuildContext context) => Material(
+        color: Color.fromARGB(255, 240, 240, 240),
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
           onPanEnd: (details) {
             direction dir = resolveGesture(details.velocity.pixelsPerSecond);
+            if (dir == direction.none) return;
             setState(() {
               gameField.move(dir);
-              if (gameField.tryAddRandCell()) game = gameState.game_over;
+              if (!gameField.tryAddRandCell()) game = gameState.game_over;
             });
           },
           child: Center(
             child: game == gameState.game_over
                 ? Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       Text("Game Over!"),
                       SizedBox(height: 20),
                       MaterialButton(
-                        onPressed: () {
-                          initState();
-                        },
+                        onPressed: () => setState(() => newGame()),
+                        elevation: 5,
+                        color: Colors.grey,
+                        child: Text('New game'),
                       ),
                     ],
                   )
@@ -117,15 +140,20 @@ resolveGesture(Offset velocity) {
   }
 }
 
-Widget gameCell(int value) => Container(
-      height: 50,
-      width: 50,
-      margin: EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
-        borderRadius: BorderRadius.all(
-          Radius.circular(10),
+Widget gameCell(int value) => Padding(
+      padding: EdgeInsets.all(5),
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        height: 60,
+        width: 60,
+        margin: EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: cellColors[value],
+          border: Border.all(color: Colors.black26),
+          borderRadius: BorderRadius.all(
+            Radius.circular(10),
+          ),
         ),
+        child: Center(child: value == 0 ? Text("") : Text(value.toString())),
       ),
-      child: Center(child: value == 0 ? Text("") : Text(value.toString())),
     );
